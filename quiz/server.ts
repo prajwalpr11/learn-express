@@ -18,7 +18,7 @@ interface UserRequest extends Request {
 const app: Express = express();
 const port: number = 8000;
 
-const dataFile = './data/users.json';
+const dataFile = path.resolve(__dirname, '../data/users.json');
 
 let users: User[];
 
@@ -61,6 +61,22 @@ app.post('/write/adduser', (req: UserRequest, res: Response) => {
     else console.log('User Saved');
   });
   res.send('done');
+});
+
+app.use('/write/adduser', addMsgToRequest);
+app.post('/write/adduser', (req: UserRequest, res: Response) => {
+  const newUser = req.body as User;
+  users.push(newUser);
+
+  fs.writeFile(dataFile, JSON.stringify(users), (err) => {
+    if (err) {
+      console.log('Failed to write');
+      res.status(500).send('Failed to save user');
+    } else {
+      console.log('User Saved');
+      res.send('User added successfully');
+    }
+  });
 });
 
 app.listen(port, () => {
